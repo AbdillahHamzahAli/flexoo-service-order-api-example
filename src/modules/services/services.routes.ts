@@ -8,7 +8,7 @@ export const servicesRoutes = (db: Db) => {
   const repository = createServicesRepository(db)
 
   return new Elysia({ name: 'services-routes', prefix: '/services' }).get(
-    '/',
+    '',
     ({ query, set }) => {
       const data = repository.findAll({
         category: query.category,
@@ -20,7 +20,13 @@ export const servicesRoutes = (db: Db) => {
     },
     {
       query: servicesQuery,
-      response: { 200: servicesListResponse }
+      response: { 200: servicesListResponse },
+      detail: {
+        tags: ['Services'],
+        summary: 'List services',
+        description:
+          'Returns active services. Use include=tech to embed each service tech stack.'
+      }
     }
   )
 }

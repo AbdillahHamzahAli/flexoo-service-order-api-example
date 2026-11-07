@@ -11,7 +11,7 @@ export const techStacksRoutes = (db: Db) => {
     name: 'tech-stacks-routes',
     prefix: '/tech-stacks'
   }).get(
-    '/',
+    '',
     ({ query, set }) => {
       const data = repository.findAll({ category: query.category })
 
@@ -20,7 +20,12 @@ export const techStacksRoutes = (db: Db) => {
     },
     {
       query: techStacksQuery,
-      response: { 200: techStacksListResponse }
+      response: { 200: techStacksListResponse },
+      detail: {
+        tags: ['Tech Stacks'],
+        summary: 'List tech stacks',
+        description: 'Returns active technologies, optionally filtered by category.'
+      }
     }
   )
 }

@@ -18,3 +18,9 @@ export class AppError extends Error {
     this.details = details
   }
 }
+
+export class RateLimitError extends AppError {
+  constructor(message = 'Too many requests') {
+    super(429, 'RATE_LIMITED', message)
+  }
+}

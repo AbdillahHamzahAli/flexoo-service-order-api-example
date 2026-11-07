@@ -13,7 +13,7 @@ export const inquiriesRoutes = (db: Db) => {
   const repository = createInquiriesRepository(db)
 
   return new Elysia({ name: 'inquiries-routes', prefix: '/contacts' }).post(
-    '/',
+    '',
     ({ body }) => {
       const inquiry = normalizeInquiry(body)
       const created = repository.create({
@@ -27,7 +27,13 @@ export const inquiriesRoutes = (db: Db) => {
     {
       body: createContactBody,
       transform: ({ body }) => assertNoUnknownFields(body),
-      response: { 201: contactCreatedResponse }
+      response: { 201: contactCreatedResponse },
+      detail: {
+        tags: ['Contacts'],
+        summary: 'Submit a project inquiry',
+        description:
+          'Creates a lead and returns its id. Rate limited per client IP.'
+      }
     }
   )
 }
