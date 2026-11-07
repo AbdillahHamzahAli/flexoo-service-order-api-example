@@ -25,10 +25,18 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# sqlite
+*.db
+*.db-wal
+*.db-shm
 
 # vercel
 .vercel

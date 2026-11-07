@@ -2,14 +2,21 @@
   "name": "flexoo-service-order-api-example",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.4",
     "elysia": "latest"
   },
   "devDependencies": {
-    "bun-types": "latest"
-  },
-  "module": "src/index.js"
+    "bun-types": "latest",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "latest"
+  }
 }
