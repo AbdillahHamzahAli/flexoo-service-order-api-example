@@ -1,4 +1,4 @@
-import { createApp } from '../../src/app'
+import { createApp } from '../../src/create-app'
 import { createDb } from '../../src/db/client'
 import { runMigrations } from '../../src/db/migrate'
 import { seed } from '../../src/db/seed'
