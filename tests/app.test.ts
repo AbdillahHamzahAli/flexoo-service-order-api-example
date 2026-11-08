@@ -42,6 +42,16 @@ describe('application shell', () => {
     expect(response.headers.get('access-control-allow-origin')).toBeNull()
   })
 
+  it('allows every origin when wildcard CORS is configured', async () => {
+    const { app } = await testApp({ corsOrigins: '*' })
+    const response = await request(app, '/api/v1/services', {
+      headers: { origin: 'https://any-site.example' }
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('access-control-allow-origin')).toBe('*')
+  })
+
   it('answers CORS preflight for the contacts endpoint', async () => {
     const { app } = await testApp()
     const response = await request(app, '/api/v1/contacts', {

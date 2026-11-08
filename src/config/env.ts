@@ -1,5 +1,5 @@
 export type AppEnv = {
-  corsOrigins: string[]
+  corsOrigins: string[] | '*'
   rateLimitMax: number
   rateLimitWindowMs: number
 }
@@ -7,7 +7,8 @@ export type AppEnv = {
 export type Env = AppEnv & {
   nodeEnv: string
   port: number
-  dbPath: string
+  databaseUrl: string
+  authToken?: string
 }
 
 function parseInteger(
@@ -40,7 +41,22 @@ export function loadEnv(): Env {
     1000
   )
 
-  const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
+  const rawCorsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:3000'
+
+  if (rawCorsOrigin.trim() === '*') {
+    return {
+      nodeEnv: process.env.NODE_ENV ?? 'development',
+      port,
+      databaseUrl:
+        process.env.TURSO_DATABASE_URL ?? process.env.DB_PATH ?? './data/app.db',
+      authToken: process.env.TURSO_AUTH_TOKEN,
+      corsOrigins: '*',
+      rateLimitMax,
+      rateLimitWindowMs
+    }
+  }
+
+  const corsOrigins = rawCorsOrigin
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0)
@@ -57,10 +73,14 @@ export function loadEnv(): Env {
     }
   }
 
+  const databaseUrl =
+    process.env.TURSO_DATABASE_URL ?? process.env.DB_PATH ?? './data/app.db'
+
   return {
     nodeEnv: process.env.NODE_ENV ?? 'development',
     port,
-    dbPath: process.env.DB_PATH ?? './data/app.db',
+    databaseUrl,
+    authToken: process.env.TURSO_AUTH_TOKEN,
     corsOrigins,
     rateLimitMax,
     rateLimitWindowMs

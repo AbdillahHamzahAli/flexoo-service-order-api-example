@@ -4,8 +4,8 @@ import { createDb } from './db/client'
 import { runMigrations } from './db/migrate'
 
 const env = loadEnv()
-const db = createDb(env.dbPath)
-runMigrations(db)
+const db = createDb(env.databaseUrl, env.authToken)
+await runMigrations(db)
 
 const app = createApp({ db, env }).listen({
   port: env.port,
@@ -27,7 +27,7 @@ async function shutdown(signal: string): Promise<void> {
   try {
     await app.stop()
   } finally {
-    db.$client.close()
+    await db.$client.close()
   }
 
   process.exit(0)

@@ -14,9 +14,9 @@ export const inquiriesRoutes = (db: Db) => {
 
   return new Elysia({ name: 'inquiries-routes', prefix: '/contacts' }).post(
     '',
-    ({ body }) => {
+    async ({ body }) => {
       const inquiry = normalizeInquiry(body)
-      const created = repository.create({
+      const created = await repository.create({
         ...inquiry,
         status: 'new',
         createdAt: new Date().toISOString()

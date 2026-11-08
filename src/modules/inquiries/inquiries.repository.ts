@@ -19,8 +19,10 @@ type CreateInquiryInput = Pick<
 
 export function createInquiriesRepository(db: Db) {
   return {
-    create(input: CreateInquiryInput): { id: number; createdAt: string } {
-      const row = db
+    async create(
+      input: CreateInquiryInput
+    ): Promise<{ id: number; createdAt: string }> {
+      const row = await db
         .insert(projectInquiries)
         .values(input)
         .returning({

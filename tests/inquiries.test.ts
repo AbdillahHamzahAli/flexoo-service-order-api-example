@@ -27,23 +27,21 @@ type InquiryRow = {
   status: string
 }
 
-function getInquiry(db: Db, id: number): InquiryRow | null {
-  return db.$client
-    .query(
-      `select id, first_name, last_name, phone, company_name, company_email,
+async function getInquiry(db: Db, id: number): Promise<InquiryRow | null> {
+  return (await db.$client.execute({
+    sql: `select id, first_name, last_name, phone, company_name, company_email,
               description, status
        from project_inquiries
-       where id = ?`
-    )
-    .get(id) as InquiryRow | null
+       where id = ?`,
+    args: [id]
+  })).rows[0] as unknown as InquiryRow | undefined ?? null
 }
 
-function countInquiries(db: Db): number {
-  const row = db.$client
-    .query('select count(*) as count from project_inquiries')
-    .get() as { count: number }
-
-  return row.count
+async function countInquiries(db: Db): Promise<number> {
+  const result = await db.$client.execute(
+    'select count(*) as count from project_inquiries'
+  )
+  return Number(result.rows[0]?.count ?? 0)
 }
 
 describe('POST /api/v1/contacts', () => {
@@ -59,7 +57,7 @@ describe('POST /api/v1/contacts', () => {
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
     )
 
-    const row = getInquiry(db, body.data.id)
+    const row = await getInquiry(db, body.data.id)
     expect(row).not.toBeNull()
     expect(row?.first_name).toBe('Budi')
     expect(row?.company_email).toBe('budi@contoh.co.id')
@@ -79,7 +77,7 @@ describe('POST /api/v1/contacts', () => {
     expect(response.status).toBe(201)
 
     const body = (await response.json()) as ContactCreatedBody
-    const row = getInquiry(db, body.data.id)
+    const row = await getInquiry(db, body.data.id)
 
     expect(row?.first_name).toBe('Budi')
     expect(row?.company_name).toBe('PT Contoh Digital')
@@ -99,7 +97,7 @@ describe('POST /api/v1/contacts', () => {
     expect(response.status).toBe(201)
 
     const body = (await response.json()) as ContactCreatedBody
-    const row = getInquiry(db, body.data.id)
+    const row = await getInquiry(db, body.data.id)
     expect(row?.last_name).toBeNull()
   })
 
@@ -240,18 +238,15 @@ describe('POST /api/v1/contacts', () => {
     expect(response.status).toBe(201)
 
     const body = (await response.json()) as ContactCreatedBody
-    const row = getInquiry(db, body.data.id)
+    const row = await getInquiry(db, body.data.id)
 
     expect(row?.description).toBe(description)
-    expect(countInquiries(db)).toBe(1)
+    expect(await countInquiries(db)).toBe(1)
 
-    const table = db.$client
-      .query(
-        "select name from sqlite_master where type = 'table' and name = 'project_inquiries'"
-      )
-      .get()
-
-    expect(table).not.toBeNull()
+    const table = await db.$client.execute(
+      "select name from sqlite_master where type = 'table' and name = 'project_inquiries'"
+    )
+    expect(table.rows.length).toBe(1)
   })
 
   it('rate limits the sixth request in a window', async () => {

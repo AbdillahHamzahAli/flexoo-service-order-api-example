@@ -9,8 +9,8 @@ export const servicesRoutes = (db: Db) => {
 
   return new Elysia({ name: 'services-routes', prefix: '/services' }).get(
     '',
-    ({ query, set }) => {
-      const data = repository.findAll({
+    async ({ query, set }) => {
+      const data = await repository.findAll({
         category: query.category,
         includeTech: query.include === 'tech'
       })

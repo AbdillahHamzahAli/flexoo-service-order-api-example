@@ -1,21 +1,23 @@
-import { Database } from 'bun:sqlite'
-import { mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
-import { drizzle } from 'drizzle-orm/bun-sqlite'
+import { createClient } from '@libsql/client'
+import { drizzle } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 
-export function createDb(path: string) {
-  if (path !== ':memory:') {
-    mkdirSync(dirname(path), { recursive: true })
+export function createDb(url: string, authToken?: string) {
+  const client = createClient({
+    url: toLibsqlUrl(url),
+    authToken,
+    timeout: 5000
+  })
+
+  return drizzle(client, { schema })
+}
+
+function toLibsqlUrl(value: string): string {
+  if (value === ':memory:') {
+    return `file:mem_${crypto.randomUUID()}`
   }
-
-  const sqlite = new Database(path, { create: true })
-
-  sqlite.exec('PRAGMA journal_mode = WAL;')
-  sqlite.exec('PRAGMA foreign_keys = ON;')
-  sqlite.exec('PRAGMA busy_timeout = 5000;')
-
-  return drizzle(sqlite, { schema })
+  if (/^(file|libsql|https?|wss?):/.test(value)) return value
+  return `file:${value}`
 }
 
 export type Db = ReturnType<typeof createDb>

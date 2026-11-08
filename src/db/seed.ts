@@ -210,10 +210,10 @@ export const SERVICE_TECH_LINKS: Record<string, string[]> = {
   'qa-automation': ['bun', 'github-actions', 'docker']
 }
 
-export function seed(db: Db): void {
-  db.transaction((tx) => {
+export async function seed(db: Db): Promise<void> {
+  await db.transaction(async (tx) => {
     for (const service of SERVICE_SEEDS) {
-      tx.insert(services)
+      await tx.insert(services)
         .values({
           ...service,
           currency: 'IDR',
@@ -239,7 +239,7 @@ export function seed(db: Db): void {
     }
 
     for (const tech of TECH_SEEDS) {
-      tx.insert(techStacks)
+      await tx.insert(techStacks)
         .values({ ...tech, isActive: true })
         .onConflictDoUpdate({
           target: techStacks.slug,
@@ -255,21 +255,17 @@ export function seed(db: Db): void {
         .run()
     }
 
-    const serviceIds = new Map(
-      tx
-        .select({ id: services.id, slug: services.slug })
-        .from(services)
-        .all()
-        .map((row) => [row.slug, row.id])
-    )
+    const serviceRows = await tx
+      .select({ id: services.id, slug: services.slug })
+      .from(services)
+      .all()
+    const serviceIds = new Map(serviceRows.map((row) => [row.slug, row.id]))
 
-    const techIds = new Map(
-      tx
-        .select({ id: techStacks.id, slug: techStacks.slug })
-        .from(techStacks)
-        .all()
-        .map((row) => [row.slug, row.id])
-    )
+    const techRows = await tx
+      .select({ id: techStacks.id, slug: techStacks.slug })
+      .from(techStacks)
+      .all()
+    const techIds = new Map(techRows.map((row) => [row.slug, row.id]))
 
     const links: Array<{ serviceId: number; techId: number }> = []
 
@@ -289,20 +285,23 @@ export function seed(db: Db): void {
     }
 
     if (links.length > 0) {
-      tx.insert(serviceTech).values(links).onConflictDoNothing().run()
+      await tx.insert(serviceTech).values(links).onConflictDoNothing().run()
     }
   })
 }
 
 if (import.meta.main) {
-  const db = createDb(process.env.DB_PATH ?? './data/app.db')
+  const db = createDb(
+    process.env.TURSO_DATABASE_URL ?? process.env.DB_PATH ?? './data/app.db',
+    process.env.TURSO_AUTH_TOKEN
+  )
 
   try {
-    seed(db)
+    await seed(db)
     console.log(
       `Seeded ${SERVICE_SEEDS.length} services, ${TECH_SEEDS.length} tech stacks, and ${Object.values(SERVICE_TECH_LINKS).flat().length} service/tech links.`
     )
   } finally {
-    db.$client.close()
+    await db.$client.close()
   }
 }

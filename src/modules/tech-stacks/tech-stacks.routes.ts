@@ -12,8 +12,8 @@ export const techStacksRoutes = (db: Db) => {
     prefix: '/tech-stacks'
   }).get(
     '',
-    ({ query, set }) => {
-      const data = repository.findAll({ category: query.category })
+    async ({ query, set }) => {
+      const data = await repository.findAll({ category: query.category })
 
       set.headers['cache-control'] = 'public, max-age=300'
       return ok(data)

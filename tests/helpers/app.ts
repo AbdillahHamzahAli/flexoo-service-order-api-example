@@ -21,19 +21,20 @@ export type ErrorBody = {
 type TestAppOptions = {
   rateLimitMax?: number
   rateLimitWindowMs?: number
+  corsOrigins?: string[] | '*'
 }
 
 export async function testApp(options: TestAppOptions = {}) {
   const db = createDb(':memory:')
 
-  runMigrations(db)
-  seed(db)
+  await runMigrations(db)
+  await seed(db)
 
   return {
     app: createApp({
       db,
       env: {
-        corsOrigins: ['http://localhost:3000'],
+        corsOrigins: options.corsOrigins ?? ['http://localhost:3000'],
         rateLimitMax: options.rateLimitMax ?? 100,
         rateLimitWindowMs: options.rateLimitWindowMs ?? 600_000
       }

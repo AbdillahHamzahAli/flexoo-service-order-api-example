@@ -9,11 +9,13 @@ type FindAllOptions = {
 
 export function createTechStacksRepository(db: Db) {
   return {
-    findAll({ category }: FindAllOptions): TechStackResponse[] {
+    async findAll({
+      category
+    }: FindAllOptions): Promise<TechStackResponse[]> {
       const filters = [eq(techStacks.isActive, true)]
       if (category) filters.push(eq(techStacks.category, category))
 
-      return db
+      return await db
         .select({
           slug: techStacks.slug,
           name: techStacks.name,

@@ -10,11 +10,14 @@ type FindAllOptions = {
 
 export function createServicesRepository(db: Db) {
   return {
-    findAll({ category, includeTech }: FindAllOptions): ServiceResponse[] {
+    async findAll({
+      category,
+      includeTech
+    }: FindAllOptions): Promise<ServiceResponse[]> {
       const filters = [eq(services.isActive, true)]
       if (category) filters.push(eq(services.category, category))
 
-      const rows = db
+      const rows = await db
         .select({
           id: services.id,
           slug: services.slug,
@@ -35,7 +38,7 @@ export function createServicesRepository(db: Db) {
         return rows.map(({ id: _id, ...service }) => service)
       }
 
-      const techRows = db
+      const techRows = await db
         .select({
           serviceId: serviceTech.serviceId,
           slug: techStacks.slug,
