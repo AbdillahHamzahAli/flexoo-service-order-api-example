@@ -1,6 +1,12 @@
 import { createApp } from './create-app'
 import { loadEnv } from './config/env'
 import { createDb } from './db/client'
+import { Elysia } from 'elysia'
+
+// Keep a direct Elysia import in the Vercel entrypoint. Vercel's framework
+// detector uses the entrypoint's static imports when selecting the Bun/Elysia
+// runtime; the actual app composition remains in create-app.ts.
+void Elysia
 
 const env = loadEnv()
 
