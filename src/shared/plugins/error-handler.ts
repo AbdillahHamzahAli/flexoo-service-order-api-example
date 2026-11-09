@@ -64,7 +64,6 @@ export const errorHandler = ({
         return fail('NOT_FOUND', 'Route not found', requestId)
       }
 
-      console.error(`[${requestId}]`, error)
       set.status = 500
       return fail('INTERNAL_ERROR', 'An unexpected error occurred', requestId)
     }

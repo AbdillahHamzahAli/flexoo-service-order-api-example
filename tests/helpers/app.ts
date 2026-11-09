@@ -2,6 +2,7 @@ import { createApp } from '../../src/create-app'
 import { createDb } from '../../src/db/client'
 import { runMigrations } from '../../src/db/migrate'
 import { seed } from '../../src/db/seed'
+import type { HttpLogger } from '../../src/shared/plugins/request-logger'
 
 export type App = ReturnType<typeof createApp>
 
@@ -22,6 +23,7 @@ type TestAppOptions = {
   rateLimitMax?: number
   rateLimitWindowMs?: number
   corsOrigins?: string[] | '*'
+  logger?: HttpLogger
 }
 
 export async function testApp(options: TestAppOptions = {}) {
@@ -37,7 +39,8 @@ export async function testApp(options: TestAppOptions = {}) {
         corsOrigins: options.corsOrigins ?? ['http://localhost:3000'],
         rateLimitMax: options.rateLimitMax ?? 100,
         rateLimitWindowMs: options.rateLimitWindowMs ?? 600_000
-      }
+      },
+      logger: options.logger
     }),
     db
   }

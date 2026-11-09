@@ -10,16 +10,18 @@ import { techStacksRoutes } from './modules/tech-stacks/tech-stacks.routes'
 import { RateLimitError } from './shared/errors'
 import { errorHandler } from './shared/plugins/error-handler'
 import { requestId } from './shared/plugins/request-id'
+import { requestLogger, type HttpLogger } from './shared/plugins/request-logger'
 
 type CreateAppOptions = {
   db: Db
   env: AppEnv
+  logger?: HttpLogger
 }
 
 const API_PREFIX = '/api/v1'
 const CONTACTS_PATH = `${API_PREFIX}/contacts`
 
-export function createApp({ db, env }: CreateAppOptions) {
+export function createApp({ db, env, logger }: CreateAppOptions) {
   const api = new Elysia({ name: 'api', prefix: API_PREFIX })
     .use(servicesRoutes(db))
     .use(techStacksRoutes(db))
@@ -27,6 +29,7 @@ export function createApp({ db, env }: CreateAppOptions) {
 
   return new Elysia({ name: 'app' })
     .use(requestId())
+    .use(requestLogger(logger))
     .use(
       errorHandler({
         rateLimitMax: env.rateLimitMax,
